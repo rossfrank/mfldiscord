@@ -8,6 +8,7 @@ def api_request(request, params=''):
     link = 'http://www' + config.server + '.myfantasyleague.com/' + config.year + '/export?TYPE=' + request + '&L=' + config.league_id + '&APIKEY=' + config.api_key + params +'&JSON=1'
     print(link)
     return requests.get(link).json()
+
 """
 updated at most once per day
 format:
@@ -64,7 +65,7 @@ def get_pending_trades():
 
 """
 format:
-    {franchise:[{futureYearDraftPicsk, currentYearDraftPicks,players,id},...]}
+    {franchise:[{futureYearDraftPicks, currentYearDraftPicks,players,id},...]}
 """
 def get_assets():
     return api_request('assets')['assets']
@@ -79,10 +80,10 @@ where 0005 referes to the franchise id who originally owns the draft pick,
 then the year and then the round (in this case the rounds are the actual rounds, not one less).
 
 format:
-    {tradeBait:[{timestamp, franchise_id, willGiveUp, inExchageFor},...]}
+    {tradeBait:[{timestamp, franchise_id, willGiveUp, inExchangeFor},...]}
 """
 def get_trade_bait(picks = 'yes'):
-    return api_request('tradeBait','INCLUDE_DRAFT_PICKS=' + pick)['tradeBaits']
+    return api_request('tradeBait','INCLUDE_DRAFT_PICKS=' + picks)['tradeBaits']
 
 """
 if no week passed then gives all bye weeks

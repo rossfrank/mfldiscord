@@ -8,6 +8,7 @@ from fuzzywuzzy import process
 
 import playerData
 import api_requests
+import tradeData
 
 
 client = discord.Client()
@@ -22,10 +23,12 @@ async def on_ready():
 
 async def hourly_background_task():
     await client.wait_until_ready()
+    channel = client.get_channel(config.background_channel)
     while not client.is_closed:
         playerData.check_age()
-        await client.send_message(channel, "test5")
-        await asyncio.sleep(3600)
+        for x in tradeData.trade_bait():
+            await client.send_message(channel, x)
+        await asyncio.sleep(10)
 
 
 async def background_task():
@@ -53,5 +56,5 @@ async def on_message(message):
         mes = name + ' averaged ' + score + 'pts'
         await client.edit_message(tmp, mes)
 
-client.loop.create_task(background_task())
+client.loop.create_task(hourly_background_task())
 client.run(config.token)

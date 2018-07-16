@@ -52,6 +52,12 @@ def get_player(name, data=read_data()):
         if x['name'] is name:
             return(x)
 
+#gets player from id
+def get_player_from_id(id, data=read_data()):
+    for x in data['player']:
+        if id == x['name']:
+            return(x)
+
 #gets a list of player names
 def get_player_names(data=read_data()):
     players = []
