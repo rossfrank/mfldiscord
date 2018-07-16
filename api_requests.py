@@ -7,7 +7,7 @@ def api_request(request, params=''):
         params = '&' + params
     link = 'http://www' + config.server + '.myfantasyleague.com/' + config.year + '/export?TYPE=' + request + '&L=' + config.league_id + '&APIKEY=' + config.api_key + params +'&JSON=1'
     print(link)
-    return requests.get(link).json()
+    return(requests.get(link).json())
 
 """
 updated at most once per day
@@ -15,7 +15,7 @@ format:
     {timestamp, since, player:[{position, name, id, team},...]}
 """
 def get_players():
-    return api_request('players')['players']
+    return(api_request('players')['players'])
 
 """
 format:
@@ -34,7 +34,7 @@ format:
     divisions:{count, division[{name, id},...]}, loadRosters}
 """
 def get_league():
-    return api_request('league')['league']
+    return(api_request('league')['league'])
 
 """
 passed franchise is four digits
@@ -47,28 +47,28 @@ format:
 def get_roster(franchise = ''):
     if franchise:
         franchise = "&FRANCHISE=" + franchise
-    return api_request('rosters', franchise)['rosters']
+    return(api_request('rosters', franchise)['rosters'])
 
 """
 gets trades pending league approval
 format:
     if one trade:
-    {pendingTrade:{offeredto, will_give_up, offereingteam,
+    {pendingTrade:{offeredto, will_give_up, offeringteam,
                    comments, description, will_receive, expires}}
     if multiple trades:
-    {pendingTrade:[{offeredto, will_give_up, offereingteam,
+    {pendingTrade:[{offeredto, will_give_up, offeringteam,
                    comments, description, will_receive, expires},...]}
 
 """
 def get_pending_trades():
-    return api_request('pendingTrades','FRANCHISE_ID=0000')['pendingTrades']
+    return(api_request('pendingTrades','FRANCHISE_ID=0000')['pendingTrades'])
 
 """
 format:
     {franchise:[{futureYearDraftPicks, currentYearDraftPicks,players,id},...]}
 """
 def get_assets():
-    return api_request('assets')['assets']
+    return(api_request('assets')['assets'])
 
 """
 When set, this will also return draft picks offered.
@@ -83,7 +83,7 @@ format:
     {tradeBait:[{timestamp, franchise_id, willGiveUp, inExchangeFor},...]}
 """
 def get_trade_bait(picks = 'yes'):
-    return api_request('tradeBait','INCLUDE_DRAFT_PICKS=' + picks)['tradeBaits']
+    return(api_request('tradeBait','INCLUDE_DRAFT_PICKS=' + picks)['tradeBaits'])
 
 """
 if no week passed then gives all bye weeks
@@ -93,7 +93,7 @@ format:
 def get_bye_weeks(week = ''):
     if week:
         week = "&W=" + week
-    return api_request('nflByeWeeks',week)['nflByeWeeks']
+    return(api_request('nflByeWeeks',week)['nflByeWeeks'])
 
 """
 if week is empty take the average
@@ -104,4 +104,4 @@ def get_player_score(player, week = 'AVG'):
     y = '2017'
     #y = config.year
     params = '&W=' + week + '&YEAR=' + y + '&PLAYERS=' + player + '&RULES=yes'
-    return api_request('playerScores', params)['playerScores']
+    return(api_request('playerScores', params)['playerScores'])

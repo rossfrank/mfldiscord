@@ -26,9 +26,11 @@ async def hourly_background_task():
     channel = client.get_channel(config.background_channel)
     while not client.is_closed:
         playerData.check_age()
+        for x in tradeData.pending_trades():
+            await client.send_message(channel, x)
         for x in tradeData.trade_bait():
             await client.send_message(channel, x)
-        await asyncio.sleep(10)
+        await asyncio.sleep(3600)
 
 
 async def background_task():

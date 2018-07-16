@@ -3,23 +3,23 @@ from pathlib import Path
 
 import api_requests
 
-#read trade bait file
-def read_trade_bait():
+#read trade file
+def read_trade():
     create_if_not_exists()
-    with open('trade_bait.json') as inputfile:
+    with open('trade.json') as inputfile:
         return(json.load(inputfile))
 
-#update trade bait file
-def update_trade_bait(timestamps):
+#update trade file
+def update_trade(timestamps, type):
     data = read_trade_bait()
-    data['baitlist'] = data['baitlist'] + timestamps
+    data[type] = data[type] + timestamps
     write_bait_data(data)
 
-#creates bait file if it doesn't exist
+#creates trade file if it doesn't exist
 def create_if_not_exists():
-    data_file = Path("trade_bait.json")
+    data_file = Path("trade.json")
     if not data_file.is_file():
-        write_bait_data({'baitlist': []})
+        write_bait_data({'tradeBait': [],'pendingTrade': []})
 
 #write bait data
 def write_bait_data(baitlist):
@@ -46,17 +46,17 @@ def get_franchise(franchise_id):
             return(x)
 
 #gets the trade bait to post and updates file
-def check_if_post(tradeBait):
-    data = read_trade_bait()
+def check_if_post(trade, type):
+    data = read_trade()[type]
     to_post = []
     if not isinstance(tradeBait, list):
         tradeBait = [tradeBait]
     for x in tradeBait:
         print(x)
         print(data)
-        if x['timestamp'] not in data['baitlist']:
+        if x['timestamp'] not in data[type]:
             to_post.append(x)
-    update_trade_bait(list(map(lambda bait: bait['timestamp'],to_post)))
+    update_trade(list(map(lambda bait: bait['timestamp'],to_post)),type)
     return(to_post)
 
 #pretty print bait info
@@ -84,8 +84,18 @@ def print_bait(bait):
         output = output + ' for ' + bait['inExchangeFor']
     return(output)
 
+def print_trade(trade):
+    output = 'TRADE ALERT: ' + trade['description'] + ' VOTE TO APPROVE OR REJECT!!'
+    return(output)
+
 def trade_bait():
     data = api_requests.get_trade_bait()
     if data:
-        to_post = check_if_post(data['tradeBait'])
+        to_post = check_if_post(data['tradeBait'],'tradeBait')
         return(map(lambda x: print_bait(x), to_post))
+
+def pending_trades():
+    data=api_requests.get_pending_trades()
+    if data:
+        to_post = check_if_post(data['pendingTrade'],'pendingTrade')
+        return(map(lambda x: print_trade(x), to_post))
