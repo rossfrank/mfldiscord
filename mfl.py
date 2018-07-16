@@ -11,6 +11,7 @@ import api_requests
 import tradeData
 
 
+
 client = discord.Client()
 
 @client.event
@@ -26,37 +27,32 @@ async def hourly_background_task():
     channel = client.get_channel(config.background_channel)
     while not client.is_closed:
         playerData.check_age()
-        for x in tradeData.pending_trades():
-            await client.send_message(channel, x)
-        for x in tradeData.trade_bait():
-            await client.send_message(channel, x)
+        pendingTrades = tradeData.pending_trades()
+        if pendingTrades:
+            for x in pendingTrades:
+                temp = discord.Embed(description=x)
+                await client.send_message(channel, embed=temp)
+        bait = tradeData.trade_bait()
+        if bait:
+            for x in bait:
+                temp = discord.Embed(description=x)
+                await client.send_message(channel, embed=temp)
         await asyncio.sleep(3600)
-
-
-async def background_task():
-    await client.wait_until_ready()
-    channel = client.get_channel(config.background_channel)
-    while not client.is_closed:
-        await client.send_message(channel, "test10")
-        await asyncio.sleep(10)
 
 @client.event
 async def on_message(message):
-    if message.content.startswith('!test'):
-        counter = 0
-        tmp = await client.send_message(message.channel, 'Calculating messages...')
-        async for log in client.logs_from(message.channel, limit=100):
-            if log.author == message.author:
-                counter += 1
-        await client.edit_message(tmp, 'You have {} messages.'.format(counter))
-    elif message.content.startswith('!points'):
-        tmp = await client.send_message(message.channel, 'Calculating Points...')
+    if message.content.startswith('!points'):
+        temp = discord.Embed(description='Calculating Points...')
+        tmp = await client.send_message(message.channel, embed=temp)
         player = message.content.replace('!points ', '')
         player = playerData.find_player(player)
         score = api_requests.get_player_score(player['id'])['playerScore']['score']
         name = " ".join(player['name'].split(", ")[::-1])
         mes = name + ' averaged ' + score + 'pts'
-        await client.edit_message(tmp, mes)
-
+        mes = discord.Embed(description=mes)
+        await client.edit_message(tmp, embed=mes)
+    elif message.content.startswith('!help'):
+        help = discord.Embed(description="type !points {player name} to get player's average points per game")
+        await client.send_message(message.channel, embed=help)
 client.loop.create_task(hourly_background_task())
 client.run(config.token)

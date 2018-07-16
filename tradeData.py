@@ -11,6 +11,7 @@ def read_trade():
 
 #update trade file
 def update_trade(timestamps, type):
+    create_if_not_exists()
     data = read_trade_bait()
     data[type] = data[type] + timestamps
     write_bait_data(data)

@@ -6,8 +6,6 @@ from fuzzywuzzy import process
 from pathlib import Path
 from datetime import datetime, timedelta
 
-bad_positions = ['TMWR', 'TMRB', 'TMDL', 'TMLB', 'TMDB', 'TMTE', 'ST', 'Off', 'TMQB', 'TMPK', 'TMPN', 'Coach', 'PN']
-
 #creates player data if it doesn't exist
 def create_if_not_exists():
     data_file = Path("player_data.json")
@@ -29,21 +27,20 @@ def save_data(data):
 def prune_data(data):
     y = []
     for x in data['player']:
-        if x['position'] not in bad_positions:
+        if x['position'] not in config.bad_positions:
             y.append(x)
     data['player'] = y
     save_data(data)
 
 #updates playerdb if older then 24 hrs
 def check_age(data = ''):
-    create_if_not_exists()
     file_data = read_data()
     if not data:
         data = file_data
     elif data['timestamp'] <= file_data['timestamp']:
             data = file_data
     now = datetime.now()
-    if not now-timedelta(hours=24) <= datetime.fromtimestamp(float(1531529144)) <= now:
+    if not now-timedelta(hours=24) <= datetime.fromtimestamp(float(data['timestamp'])) <= now:
         prune_data(api_requests.get_players())
 
 #get Player object from player's name
