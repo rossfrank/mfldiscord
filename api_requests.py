@@ -1,6 +1,5 @@
 import config
 import requests
-#api_request_pendingTrades = 'http://www' + config.server + '.myfantasyleague.com/' + config.year + '/export?TYPE=' + request_type  + '&L=' + config.league_id + '&APIKEY=' + config.api_key + '&FRANCHISE_ID=0000&JSON=1'
 
 def api_request(request, params=''):
     if params:
