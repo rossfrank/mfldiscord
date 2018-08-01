@@ -105,3 +105,10 @@ def get_player_score(player, week = 'AVG'):
     #y = config.year
     params = '&W=' + week + '&YEAR=' + y + '&PLAYERS=' + player + '&RULES=yes'
     return(api_request('playerScores', params)['playerScores'])
+
+"""
+format:
+    {draftUnit: {unit, draftType, round1DraftOrder, draftPick: [{timestamp,franchise,round,pick,player,comments},...]}}
+"""
+def get_draft_results():
+    return(api_request('draftResults')['draftResults'])
