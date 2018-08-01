@@ -30,6 +30,21 @@ async def get_pending():
             temp = discord.Embed(description=x)
             await client.send_message(channel, embed=temp)
 
+async def get_draft_results():
+    results = tradeData.get_draft_results()
+    if results and len(results) > 1:
+        for x in results:
+            pick, ping = x
+            channel = client.get_channel(config.background_channel)
+            temp = discord.Embed(description=pick)
+            if ping:
+                print(ping)
+                user = channel.server.get_member_named(ping[1:])
+                print(user)
+                pick = user.mention + " " + pick
+            temp = discord.Embed(description=pick)
+            await client.send_message(channel, embed=temp)
+
 async def get_bait():
     bait = tradeData.trade_bait()
     if bait:
@@ -51,6 +66,7 @@ async def quarter_hourly_background_task():
     while not client.is_closed:
         await get_pending()
         await get_bait()
+        await get_draft_results()
         await asyncio.sleep(900)
 
 async def points(message):
@@ -101,4 +117,3 @@ async def on_message(message):
 client.loop.create_task(hourly_background_task())
 client.loop.create_task(quarter_hourly_background_task())
 client.run(config.token)
-

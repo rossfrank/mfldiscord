@@ -2,8 +2,10 @@ import json
 from pathlib import Path
 from functools import reduce
 import re
-
+import math
 import api_requests
+import playerData
+import config
 
 def string_reduce(l):
     return reduce((lambda x, y: x + '\n' + y), l)
@@ -25,7 +27,7 @@ def update_trade(timestamps, type):
 def create_if_not_exists():
     data_file = Path("trade.json")
     if not data_file.is_file():
-        write_bait_data({'tradeBait': [],'pendingTrade': []})
+        write_bait_data({'tradeBait': [],'pendingTrade': [], 'draftResults': []})
 
 #write bait data
 def write_bait_data(baitlist):
@@ -39,7 +41,6 @@ def draft_pick_info(pick):
         return('Round ' + str(int(pick_info[1]) + 1) + ' Pick ' + pick_info[2])
     else:
         franchise = get_individ_franchise(pick_info[1])
-        import math
         ordinal = (lambda n: "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4]))
         year = pick_info[2]
         r = ordinal(int(pick_info[3]))
@@ -47,8 +48,9 @@ def draft_pick_info(pick):
         return(output)
 
 #get franchise info
-def get_individ_franchise(franchise_id):
-    data = api_requests.get_league()
+def get_individ_franchise(franchise_id, data=''):
+    if not data:
+        data = api_requests.get_league()
     for x in data['franchises']['franchise']:
         if x['id'] == franchise_id:
             return(x)
@@ -63,7 +65,7 @@ def check_if_post(trade, call):
     if not isinstance(trade, list):
         trade = [trade]
     for x in trade:
-        if x[y] not in data:
+        if x[y] not in data and x[y]:
             to_post.append(x)
     update_trade(list(map(lambda bait: bait[y],to_post)), call)
     return(to_post)
@@ -153,3 +155,32 @@ def get_my_assets(abbrev):
         return title, sPicks
     else:
         return get_abbrevs(title = 'Wrong Abbreviation!')
+
+def print_picks(picks_made):
+    ordinal = (lambda n: "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4]))
+    print_picks = []
+    player = playerData.read_data()
+    franchises = api_requests.get_league()
+    for p in picks_made:
+        player = playerData.get_player_from_id(p['player'])
+        name = " ".join(player['name'].split(", ")[::-1])
+        pick_string = "With the " + ordinal(int(p['pick'])) + " in the "
+        pick_string = pick_string + ordinal(int(p['round'])) + " Round " + get_individ_franchise(p['franchise'], franchises)['name']
+        pick_string = pick_string + ' selects ' + name + ' ' + player['position'] + ' from ' + player['team']
+        print_picks.append((pick_string,''))
+    return(print_picks)
+
+
+def get_draft_results():
+    data = api_requests.get_draft_results()['draftUnit']['draftPick']
+    picks_made = check_if_post(data,'draftResults')
+    pick_strings = print_picks(picks_made)
+    next_pick = ''
+    for next in data:
+        if next['timestamp']:
+            continue
+        next_pick = next
+        break
+    if next_pick:
+        pick_strings.append((' is now on the clock',config.discord_name[next_pick['franchise']]))
+    return pick_strings
