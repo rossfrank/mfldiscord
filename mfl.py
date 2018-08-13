@@ -8,7 +8,7 @@ from fuzzywuzzy import process
 
 import playerData
 import api_requests
-import tradeData
+import franchiseData as data
 
 client = discord.Client()
 
@@ -23,7 +23,7 @@ async def update_players():
     playerData.check_age()
 
 async def get_pending():
-    pendingTrades = tradeData.pending_trades()
+    pendingTrades = data.pending_trades()
     if pendingTrades:
         channel = client.get_channel(config.background_channel)
         for x in pendingTrades:
@@ -31,7 +31,7 @@ async def get_pending():
             await client.send_message(channel, embed=temp)
 
 async def get_draft_results():
-    results = tradeData.get_draft_results()
+    results = data.get_draft_results()
     if results and len(results) > 1:
         channel = client.get_channel(config.draft_channel)
         for x in results:
@@ -45,7 +45,7 @@ async def get_draft_results():
             await client.send_message(channel, embed=temp)
 
 async def get_bait():
-    bait = tradeData.trade_bait()
+    bait = data.trade_bait()
     if bait:
         channel = client.get_channel(config.background_channel)
         for x in bait:
@@ -83,7 +83,7 @@ async def assets(message):
     temp = discord.Embed(description='Finding Assets...')
     tmp = await client.send_message(message.channel, embed=temp)
     assets = message.content.replace('!assets ', '')
-    title, des = tradeData.get_my_assets(assets)
+    title, des = data.get_my_assets(assets)
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 
@@ -91,7 +91,7 @@ async def abbrevs(message):
     temp = discord.Embed(description='Finding Abbreviations...')
     tmp = await client.send_message(message.channel, embed=temp)
     assets = message.content.replace('!assets ', '')
-    title, des = tradeData.get_abbrevs()
+    title, des = data.get_abbrevs()
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 

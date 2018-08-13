@@ -13,7 +13,7 @@ def string_reduce(l):
 #read trade file
 def read_trade():
     create_if_not_exists()
-    with open('trade.json') as inputfile:
+    with open('data.json') as inputfile:
         return(json.load(inputfile))
 
 #update trade file
@@ -21,17 +21,17 @@ def update_trade(timestamps, type):
     create_if_not_exists()
     data = read_trade()
     data[type] = data[type] + timestamps
-    write_bait_data(data)
+    write_data(data)
 
 #creates trade file if it doesn't exist
 def create_if_not_exists():
-    data_file = Path("trade.json")
+    data_file = Path('data.json')
     if not data_file.is_file():
-        write_bait_data({'tradeBait': [],'pendingTrade': [], 'draftResults': []})
+        write_data({'tradeBait': [],'pendingTrade': [], 'draftResults': []})
 
 #write bait data
-def write_bait_data(baitlist):
-    with open('trade.json', 'w') as outfile:
+def write_data(baitlist):
+    with open('data.json', 'w') as outfile:
         json.dump(baitlist, outfile)
 
 #pretty print draft pick
@@ -144,7 +144,6 @@ def get_abbrevs(title = ''):
 
 def get_my_assets(abbrev):
     if not abbrev:
-        #TODO get actual abbreviations
         return get_abbrevs(title = 'Wrong Abbreviation!')
     franchise = get_franchise(abbrev)
     if not franchise:
