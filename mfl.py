@@ -25,21 +25,22 @@ async def update_players():
 async def get_pending():
     pendingTrades = data.pending_trades()
     if pendingTrades:
-        channel = client.get_channel(config.background_channel)
         for x in pendingTrades:
+            channel = client.get_channel(config.background_channel)
             temp = discord.Embed(description=x)
             await client.send_message(channel, embed=temp)
 
 async def get_draft_results():
     results = data.get_draft_results()
     if results and len(results) > 1:
-        channel = client.get_channel(config.draft_channel)
         for x in results:
             pick, ping = x
+            channel = client.get_channel(config.background_channel)
             temp = discord.Embed(description=pick)
             if ping:
                 print(ping)
-                user = channel.server.get_member_named(ping)
+                user = channel.server.get_member_named(ping[1:])
+                print(user)
                 pick = user.mention + " " + pick
             temp = discord.Embed(description=pick)
             await client.send_message(channel, embed=temp)
@@ -47,8 +48,8 @@ async def get_draft_results():
 async def get_bait():
     bait = data.trade_bait()
     if bait:
-        channel = client.get_channel(config.background_channel)
         for x in bait:
+            channel = client.get_channel(config.background_channel)
             temp = discord.Embed(description=x)
             await client.send_message(channel, embed=temp)
 
@@ -66,7 +67,7 @@ async def quarter_hourly_background_task():
         await get_pending()
         await get_bait()
         await get_draft_results()
-        await asyncio.sleep(300)
+        await asyncio.sleep(900)
 
 async def points(message):
     temp = discord.Embed(description='Calculating Points...')
