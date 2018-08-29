@@ -132,7 +132,7 @@ async def help_message(message):
     help_mes = help_mes + '\n' + 'type !abbrevs to get a list of all team abbreviations'
     help_mes = help_mes + '\n' + 'type !assets {Team Abbreviation} to get all draft picks for a team'
     help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} to get all players for a team'
-    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} {position/taxi/ir} to get all players for a team at a position'
+    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} {position/TAXI/IR} to get all players for a team at a position'
     helpMes = discord.Embed(description=help_mes)
     await client.send_message(message.channel, embed=helpMes)
 
