@@ -128,8 +128,9 @@ def get_assets(franchise):
         if x['id'] == franchise['id']:
             team = x
     curPicks = []
-    for x in team['currentYearDraftPicks']['draftPick']:
-        curPicks.append(x['description'])
+    if'currentYearDraftPicks' in team.keys():
+        for x in team['currentYearDraftPicks']['draftPick']:
+            curPicks.append(x['description'])
     futPicks = []
     for x in team['futureYearDraftPicks']['draftPick']:
         futPicks.append(x['description'])
@@ -147,7 +148,7 @@ def get_my_assets(abbrev):
         #TODO get actual abbreviations
         return get_abbrevs(title = 'Wrong Abbreviation!')
     franchise = get_franchise(abbrev)
-    if not franchise:
+    if franchise:
         curPicks, futPicks = get_assets(franchise)
         picks =  curPicks + futPicks
         sPicks = string_reduce(picks)

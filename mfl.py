@@ -65,17 +65,35 @@ async def quarter_hourly_background_task():
     while not client.is_closed:
         await get_pending()
         await get_bait()
-        await get_draft_results()
+#        await get_draft_results()
         await asyncio.sleep(300)
 
 async def points(message):
     temp = discord.Embed(description='Calculating Points...')
     tmp = await client.send_message(message.channel, embed=temp)
-    player = message.content.replace('!points ', '')
-    player = playerData.find_player(player)
-    score = api_requests.get_player_score(player['id'])['playerScore']['score']
+    items = message.content.split(' ')
+    #player = message.content.replace('!points ', '')
+    if len(items) is 4 and items[3].isdigit():
+        week = items[3]
+    else:
+        week = 'AVG'
+    player = playerData.find_player(items[1] + ' ' + items[2])
+    print(week)
+    print(player)
+    scores = api_requests.get_player_score(player['id'],week)['playerScore']
+    if week is 'AVG':
+        score = scores['score']
+        verb = ' averaged '
+        tail = ''
+    else:
+        for s in scores:
+            if s['week'] is week:
+                score = s['score']
+                break
+        verb = ' scored '
+        tail = ' in week ' + week
     name = " ".join(player['name'].split(", ")[::-1])
-    mes = name + ' averaged ' + score + 'pts'
+    mes = name + verb + score + 'pts' + tail
     mes = discord.Embed(description=mes)
     await client.edit_message(tmp, embed=mes)
 
@@ -90,7 +108,7 @@ async def assets(message):
 async def abbrevs(message):
     temp = discord.Embed(description='Finding Abbreviations...')
     tmp = await client.send_message(message.channel, embed=temp)
-    assets = message.content.replace('!assets ', '')
+    assets = message.content.replace('!abbrevs ', '')
     title, des = tradeData.get_abbrevs()
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)

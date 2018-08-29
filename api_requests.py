@@ -100,8 +100,7 @@ format:
     {playerScore: {week, score, id}}
 """
 def get_player_score(player, week = 'AVG'):
-    y = '2017'
-    #y = config.year
+    y = config.year
     params = '&W=' + week + '&YEAR=' + y + '&PLAYERS=' + player + '&RULES=yes'
     return(api_request('playerScores', params)['playerScores'])
 

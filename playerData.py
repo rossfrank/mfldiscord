@@ -2,6 +2,7 @@ import config
 import requests
 import json
 import api_requests
+import tradeData
 from fuzzywuzzy import process
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -67,3 +68,24 @@ def find_player(name):
     data = read_data()
     player_name , conf =  process.extractOne(name, get_player_names(data))
     return(get_player(player_name, data))
+
+#gets roster
+def get_roster(abbrev):
+    franchise = tradeData.get_franchise(abbrev)
+    if not franchise:
+        return tradeData.get_abbrevs(title = 'Wrong Abbreviation!')
+    roster = api_requests.get_roster(franchise['id'])['franchise']
+    taxi = []
+    roster = []
+    ir = []
+    data = read_data()
+    for p in roster:
+        player = get_player_from_id(p['id'], data)
+        if p['status'] is 'ROSTER':
+            roster.append(player)
+        elif p['status'] is 'TAXI_SQUAD':
+            taxi.append(player)
+        else:
+            ir.append(player)
+    #TODO print player by position
+    return(roster)
