@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 def create_if_not_exists():
     data_file = Path("player_data.json")
     if not data_file.is_file():
-        save_data(prune_data(api_requests.get_players()))
+        prune_data(api_requests.get_players())
 
 #get player data from file
 def read_data():
@@ -75,17 +75,55 @@ def get_roster(abbrev):
     if not franchise:
         return tradeData.get_abbrevs(title = 'Wrong Abbreviation!')
     roster = api_requests.get_roster(franchise['id'])['franchise']
+    return(roster['player'])
+
+def print_players(players, ir_taxi=True):
+    result = []
+    for player,status in players:
+        name = " ".join(player['name'].split(", ")[::-1])
+        s = ''
+        if status == 'TAXI_SQUAD':
+            s = ', TAXI'
+        elif status == 'INJURED_RESERVE':
+            s = ', IR'
+        if ir_taxi or status == 'ROSTER':
+            result.append(name + ' ' + player['position'] + ', ' + player['team'] + s)
+    return('\n'.join(result))
+
+def print_players_ir_taxi(players):
+    result = []
+    for player in players:
+        name = " ".join(player['name'].split(", ")[::-1])
+        result.append(name + ' ' + player['position'] + ', ' + player['team'])
+    return('\n'.join(result))
+
+def get_by_position(abbrev, position = ''):
+    if not abbrev:
+        return tradeData.get_abbrevs(title = 'Wrong Abbreviation!')
+    players = get_roster(abbrev)
     taxi = []
-    roster = []
+    roster = {}
     ir = []
     data = read_data()
-    for p in roster:
+    for p in players:
         player = get_player_from_id(p['id'], data)
-        if p['status'] is 'ROSTER':
-            roster.append(player)
-        elif p['status'] is 'TAXI_SQUAD':
-            taxi.append(player)
+        if player['position'] in roster.keys():
+            roster[player['position']].append((player,p['status']))
         else:
+            roster[player['position']] = [(player,p['status'])]
+        if p['status'] == 'TAXI_SQUAD':
+            taxi.append(player)
+        elif p['status'] == 'INJURED_RESERVE':
             ir.append(player)
-    #TODO print player by position
-    return(roster)
+    if position is 'taxi':
+        return(print_players_ir_taxi(taxi))
+    elif position is 'ir':
+        return(print_players_ir_taxi(ir))
+    elif position in roster.keys():
+        return(print_players(roster[position]))
+    result = 'ROSTER:\n'
+    for pos in roster.keys():
+        result = result + print_players(roster[pos], False) + '\n'
+    result = result + 'TAXI:\n' + print_players_ir_taxi(taxi) + '\nIR:\n' + print_players_ir_taxi(ir)
+    print(result)
+    return(('Roster',result))

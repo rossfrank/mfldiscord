@@ -113,10 +113,26 @@ async def abbrevs(message):
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 
+async def roster(message):
+    temp = discord.Embed(description='Finding Roster...')
+    tmp = await client.send_message(message.channel, embed=temp)
+    input = message.content.replace('!roster ', '')
+    input = input.split(' ')
+    position = ''
+    if len(input) is 2:
+        position = input[1]
+    title, des = playerData.get_by_position(input[0],position)
+    mes = discord.Embed(title=title, description=des)
+    await client.edit_message(tmp, embed=mes)
+
+
 async def help_message(message):
-    help_mes = "type !points {player name} to get player's average points per game"
+    help_mes = "type !points {player name} to get player's average points per game so far"
+    help_mes = "type !points {player name} {week #} to get player's points for a specific game"
     help_mes = help_mes + '\n' + 'type !abbrevs to get a list of all team abbreviations'
     help_mes = help_mes + '\n' + 'type !assets {Team Abbreviation} to get all draft picks for a team'
+    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} to get all players for a team'
+    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} {position/taxi/ir} to get all players for a team at a position'
     helpMes = discord.Embed(description=help_mes)
     await client.send_message(message.channel, embed=helpMes)
 
@@ -128,6 +144,8 @@ async def on_message(message):
         await assets(message)
     elif message.content.startswith('!abbrevs'):
         await abbrevs(message)
+    elif message.content.startswith('!roster'):
+        await roster(message)
     elif message.content.startswith('!help'):
         await help_message(message)
 
