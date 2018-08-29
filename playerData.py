@@ -116,11 +116,11 @@ def get_by_position(abbrev, position = ''):
         elif p['status'] == 'INJURED_RESERVE':
             ir.append(player)
     if position is 'taxi':
-        return(print_players_ir_taxi(taxi))
+        return(('Roster',print_players_ir_taxi(taxi)))
     elif position is 'ir':
-        return(print_players_ir_taxi(ir))
+        return(('Roster',print_players_ir_taxi(ir)))
     elif position in roster.keys():
-        return(print_players(roster[position]))
+        return(('Roster',print_players(roster[position])))
     result = 'ROSTER:\n'
     for pos in roster.keys():
         result = result + print_players(roster[pos], False) + '\n'
