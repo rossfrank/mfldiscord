@@ -4,6 +4,8 @@ api_key = ''
 league_id = ''
 year = ''
 server = ''
+#should the program look for draft results
+draft=False
 draft_channel = ''
 background_channel = ''
 #remove positions you want to use

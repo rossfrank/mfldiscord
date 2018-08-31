@@ -30,6 +30,18 @@ async def get_pending():
             temp = discord.Embed(description=x)
             await client.send_message(channel, embed=temp)
 
+async def dez(message):
+    temp = discord.Embed(description='Finding Team...')
+    tmp = await client.send_message(message.channel, embed=temp)
+    team = playerData.get_player_from_id('9823')['team']
+    name = 'Dez Bryant'
+    if 'FA' in team:
+        result = name + ' is still a Free Agent'
+    else:
+        result = name + ' HAS BEEN SIGNED BY ' + team
+    mes = discord.Embed(description=result)
+    await client.edit_message(tmp, embed=mes)
+
 async def get_draft_results():
     results = tradeData.get_draft_results()
     if results and len(results) > 1:
@@ -65,7 +77,8 @@ async def quarter_hourly_background_task():
     while not client.is_closed:
         await get_pending()
         await get_bait()
-#        await get_draft_results()
+        if config.draft:
+            await get_draft_results()
         await asyncio.sleep(300)
 
 async def points(message):
@@ -73,27 +86,32 @@ async def points(message):
     tmp = await client.send_message(message.channel, embed=temp)
     items = message.content.split(' ')
     #player = message.content.replace('!points ', '')
-    if len(items) is 4 and items[3].isdigit():
-        week = items[3]
-    else:
-        week = 'AVG'
-    player = playerData.find_player(items[1] + ' ' + items[2])
-    print(week)
-    print(player)
-    scores = api_requests.get_player_score(player['id'],week)['playerScore']
-    if week is 'AVG':
-        score = scores['score']
-        verb = ' averaged '
-        tail = ''
-    else:
-        for s in scores:
-            if s['week'] is week:
-                score = s['score']
-                break
-        verb = ' scored '
-        tail = ' in week ' + week
-    name = " ".join(player['name'].split(", ")[::-1])
-    mes = name + verb + score + 'pts' + tail
+    try:
+        if len(items) is 4 and items[3].isdigit():
+            week = items[3]
+        else:
+            week = 'AVG'
+        player = playerData.find_player(items[1] + ' ' + items[2])
+        scores = api_requests.get_player_score(player['id'],week)['playerScore']
+        if week is 'AVG':
+            score = scores['score']
+            verb = ' averaged '
+            tail = ''
+        else:
+            for s in scores:
+                if s['week'] is week:
+                    score = s['score']
+                    break
+            verb = ' scored '
+            tail = ' in week ' + week
+        if not score:
+            score = '0'
+        name = " ".join(player['name'].split(", ")[::-1])
+        mes = name + verb + score + ' pts' + tail
+        if name == 'Dez Bryant':
+            mes = 'Dez Bryant is not on a team, therefore he scores no points'
+    except:
+        mes = 'Your command is wrong'
     mes = discord.Embed(description=mes)
     await client.edit_message(tmp, embed=mes)
 
@@ -101,7 +119,11 @@ async def assets(message):
     temp = discord.Embed(description='Finding Assets...')
     tmp = await client.send_message(message.channel, embed=temp)
     assets = message.content.replace('!assets ', '')
-    title, des = tradeData.get_my_assets(assets)
+    try:
+        title, des = tradeData.get_my_assets(assets)
+    except:
+        title = 'Bad Assets'
+        des = 'Your command is wrong'
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 
@@ -116,12 +138,16 @@ async def abbrevs(message):
 async def roster(message):
     temp = discord.Embed(description='Finding Roster...')
     tmp = await client.send_message(message.channel, embed=temp)
-    input = message.content.replace('!roster ', '')
-    input = input.split(' ')
-    position = ''
-    if len(input) is 2:
-        position = input[1]
-    title, des = playerData.get_by_position(input[0],position)
+    try:
+        input = message.content.replace('!roster ', '')
+        input = input.split(' ')
+        position = ''
+        if len(input) is 2:
+            position = input[1]
+        title, des = playerData.get_by_position(input[0],position)
+    except:
+        title = 'Error'
+        des = 'Your Command is wrong'
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 
@@ -148,6 +174,8 @@ async def on_message(message):
         await roster(message)
     elif message.content.startswith('!help'):
         await help_message(message)
+    elif message.content.startswith('!dez'):
+        await dez(message)
 
 client.loop.create_task(hourly_background_task())
 client.loop.create_task(quarter_hourly_background_task())
