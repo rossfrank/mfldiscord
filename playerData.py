@@ -28,7 +28,7 @@ def save_data(data):
 def prune_data(data):
     y = []
     for x in data['player']:
-        if x['position'] not in config.bad_positions:
+        if x['position'] in config.positions:
             y.append(x)
     data['player'] = y
     save_data(data)
@@ -105,28 +105,23 @@ def rookie_check(player):
         return False
     return False
 
-def position_sort(positions):
-    def sort(x, size):
-        try:
-            return config.position_sort.index(x)
-        except:
-            return size - 1
-    return(sorted(positions, key=lambda x:sort(x,len(positions))))
-
 def print_players_rookie(roster):
     results = []
-    for position in position_sort(roster.keys()):
-        rookies = filter(lambda x: rookie_check(x[0]),roster[position])
-        if rookies:
-            results.append(position + ':')
-            for player,status in rookies:
-                temp = " ".join(player['name'].split(", ")[::-1])
-                if not status == 'ROSTER':
-                    s = 'IR'
-                    if status.split('_')[0] == 'TAXI':
-                        s = 'TAXI'
-                    temp = temp + ', ' + 'TAXI'
-                results.append(temp)
+    for position in config.positions:
+        try:
+            rookies = filter(lambda x: rookie_check(x[0]),roster[position])
+            if rookies:
+                results.append(position + ':')
+                for player,status in rookies:
+                    temp = " ".join(player['name'].split(", ")[::-1])
+                    if not status == 'ROSTER':
+                        s = 'IR'
+                        if status.split('_')[0] == 'TAXI':
+                            s = 'TAXI'
+                        temp = temp + ', ' + 'TAXI'
+                    results.append(temp)
+        except:
+            continue
     return('\n'.join(results))
 
 
@@ -157,7 +152,10 @@ def get_by_position(abbrev, position = ''):
     elif position in roster.keys():
         return((position,print_players(roster[position])))
     result = 'ROSTER:\n'
-    for pos in roster.keys():
-        result = result + print_players(roster[pos], False) + '\n'
+    for pos in config.positions:
+        try:
+            result = result + print_players(roster[pos], False) + '\n'
+        except:
+            continue
     result = result + 'TAXI:\n' + print_players_ir_taxi(taxi) + '\nIR:\n' + print_players_ir_taxi(ir)
     return(('Roster',result))
