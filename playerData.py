@@ -97,6 +97,39 @@ def print_players_ir_taxi(players):
         result.append(name + ' ' + player['position'] + ', ' + player['team'])
     return('\n'.join(result))
 
+def rookie_check(player):
+    try:
+        if player['status'] == 'R':
+            return True
+    except:
+        return False
+    return False
+
+def position_sort(positions):
+    def sort(x, size):
+        try:
+            return config.position_sort.index(x)
+        except:
+            return size - 1
+    return(sorted(positions, key=lambda x:sort(x,len(positions))))
+
+def print_players_rookie(roster):
+    results = []
+    for position in position_sort(roster.keys()):
+        rookies = filter(lambda x: rookie_check(x[0]),roster[position])
+        if rookies:
+            results.append(position + ':')
+            for player,status in rookies:
+                temp = " ".join(player['name'].split(", ")[::-1])
+                if not status == 'ROSTER':
+                    s = 'IR'
+                    if status.split('_')[0] == 'TAXI':
+                        s = 'TAXI'
+                    temp = temp + ', ' + 'TAXI'
+                results.append(temp)
+    return('\n'.join(results))
+
+
 def get_by_position(abbrev, position = ''):
     if not abbrev:
         return tradeData.get_abbrevs(title = 'Wrong Abbreviation!')
@@ -116,11 +149,13 @@ def get_by_position(abbrev, position = ''):
         elif p['status'] == 'INJURED_RESERVE':
             ir.append(player)
     if position == 'TAXI':
-        return(('Roster',print_players_ir_taxi(taxi)))
+        return(('Taxi Squad',print_players_ir_taxi(taxi)))
     elif position == 'IR':
-        return(('Roster',print_players_ir_taxi(ir)))
+        return(('IR',print_players_ir_taxi(ir)))
+    elif position == 'R':
+        return(('Rookies',print_players_rookie(roster)))
     elif position in roster.keys():
-        return(('Roster',print_players(roster[position])))
+        return((position,print_players(roster[position])))
     result = 'ROSTER:\n'
     for pos in roster.keys():
         result = result + print_players(roster[pos], False) + '\n'
