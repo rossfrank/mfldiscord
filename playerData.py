@@ -69,6 +69,15 @@ def find_player(name):
     player_name , conf =  process.extractOne(name, get_player_names(data))
     return(get_player(player_name, data))
 
+def print_status(name):
+    player_status, player = get_player_status(name)
+    player_name = " ".join(player['name'].split(", ")[::-1])
+    return(player_name + ' is on ' + player_status['status'])
+
+def get_player_status(name):
+    player = find_player(name)
+    return((api_requests.get_player_status(player['id']),player))
+
 #gets roster
 def get_roster(abbrev):
     franchise = tradeData.get_franchise(abbrev)
@@ -151,11 +160,19 @@ def get_by_position(abbrev, position = ''):
         return(('Rookies',print_players_rookie(roster)))
     elif position in roster.keys():
         return((position,print_players(roster[position])))
-    result = 'ROSTER:\n'
+    result = []
     for pos in config.positions:
         try:
-            result = result + print_players(roster[pos], False) + '\n'
+            result.append(print_players(roster[pos], False))
         except:
             continue
-    result = result + 'TAXI:\n' + print_players_ir_taxi(taxi) + '\nIR:\n' + print_players_ir_taxi(ir)
-    return(('Roster',result))
+    print_taxi = print_players_ir_taxi(taxi)
+    if print_taxi:
+        result.append('TAXI')
+        result.append(print_taxi)
+    print_ir = print_players_ir_taxi(ir)
+    if print_ir:
+        result.append('IR')
+        result.append(print_ir)
+    #result = result + 'TAXI:\n' + print_players_ir_taxi(taxi) + '\nIR:\n' + print_players_ir_taxi(ir)
+    return(('Roster','\n'.join(result)))

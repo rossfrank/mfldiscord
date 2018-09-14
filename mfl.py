@@ -23,15 +23,19 @@ async def update_players():
     playerData.check_age()
 
 async def get_pending():
-    pendingTrades = tradeData.pending_trades()
-    if pendingTrades:
-        channel = client.get_channel(config.background_channel)
-        for x in pendingTrades:
-            temp = discord.Embed(description=x)
-            await client.send_message(channel, embed=temp)
+    try:
+        pendingTrades = tradeData.pending_trades()
+        if pendingTrades:
+            channel = client.get_channel(config.background_channel)
+            for x in pendingTrades:
+                temp = discord.Embed(description=x)
+                await client.send_message(channel, embed=temp)
+    except:
+        pass
 
 async def dez(message):
     temp = discord.Embed(description='Finding Team...')
+    print(message)
     tmp = await client.send_message(message.channel, embed=temp)
     team = playerData.get_player_from_id('9823')['team']
     name = 'Dez Bryant'
@@ -64,13 +68,6 @@ async def get_bait():
             temp = discord.Embed(description=x)
             await client.send_message(channel, embed=temp)
 
-async def hourly_background_task():
-    await client.wait_until_ready()
-    channel = client.get_channel(config.background_channel)
-    while not client.is_closed:
-        await update_players()
-        await asyncio.sleep(3600)
-
 async def quarter_hourly_background_task():
     await client.wait_until_ready()
     channel = client.get_channel(config.background_channel)
@@ -79,6 +76,7 @@ async def quarter_hourly_background_task():
         await get_bait()
         if config.draft:
             await get_draft_results()
+        await update_players()
         await asyncio.sleep(300)
 
 async def points(message):
@@ -120,7 +118,7 @@ async def assets(message):
     tmp = await client.send_message(message.channel, embed=temp)
     assets = message.content.replace('!assets ', '')
     try:
-        title, des = tradeData.get_my_assets(assets)
+        title, des = tradeData.get_my_assets(assets.upper())
     except:
         title = 'Bad Assets'
         des = 'Your command is wrong'
@@ -130,7 +128,6 @@ async def assets(message):
 async def abbrevs(message):
     temp = discord.Embed(description='Finding Abbreviations...')
     tmp = await client.send_message(message.channel, embed=temp)
-    assets = message.content.replace('!abbrevs ', '')
     title, des = tradeData.get_abbrevs()
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
@@ -144,21 +141,35 @@ async def roster(message):
         position = ''
         if len(input) is 2:
             position = input[1]
-        title, des = playerData.get_by_position(input[0],position)
+        title, des = playerData.get_by_position(input[0].upper(),position.upper())
     except:
         title = 'Error'
         des = 'Your Command is wrong'
     mes = discord.Embed(title=title, description=des)
     await client.edit_message(tmp, embed=mes)
 
+async def private(message):
+    await client.send_message(message.channel, 'Starting Private Message')
+    await client.send_message(message.author, 'Private Message here')
+
+async def player(message):
+    tmp = await client.send_message(message.channel, 'Finding Player...')
+    name = message.content.replace('!player ', '')
+    try:
+        des = playerData.print_status(name)
+    except:
+        des = 'Your command is wrong'
+    await client.edit_message(tmp, des)
 
 async def help_message(message):
-    help_mes = "type !points {player name} to get player's average points per game so far"
-    help_mes = "type !points {player name} {week #} to get player's points for a specific game"
-    help_mes = help_mes + '\n' + 'type !abbrevs to get a list of all team abbreviations'
-    help_mes = help_mes + '\n' + 'type !assets {Team Abbreviation} to get all draft picks for a team'
-    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} to get all players for a team'
-    help_mes = help_mes + '\n' + 'type !roster {Team Abbreviation} {position/TAXI/IR/R} to get all players for a team at a position'
+    help_mes = '!points {player name} - player average points per game'
+    help_mes = help_mes + '\n' + '!points {player name} {week #} - player points for week'
+    help_mes = help_mes + '\n' + '!abbrevs - all team abbreviations'
+    help_mes = help_mes + '\n' + '!assets {Abbrev} - all draft picks'
+    help_mes = help_mes + '\n' + '!roster {Abbrev} - full roster'
+    help_mes = help_mes + '\n' + '!roster {Abbrev} {position/TAXI/IR/R} - specific position'
+    help_mes = help_mes + '\n' + '!private - start private message with bot'
+    help_mes = help_mes + '\n' + '!player {name} - check which team player is on'
     helpMes = discord.Embed(description=help_mes)
     await client.send_message(message.channel, embed=helpMes)
 
@@ -176,7 +187,10 @@ async def on_message(message):
         await help_message(message)
     elif message.content.startswith('!dez'):
         await dez(message)
+    elif message.content.startswith('!private'):
+        await private(message)
+    elif message.content.startswith('!player'):
+        await player(message)
 
-client.loop.create_task(hourly_background_task())
 client.loop.create_task(quarter_hourly_background_task())
 client.run(config.token)

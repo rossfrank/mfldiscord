@@ -110,3 +110,11 @@ format:
 """
 def get_draft_results():
     return(api_request('draftResults')['draftResults'])
+
+"""
+format:
+    {"status":"Franchise Name","id"}
+"""
+def get_player_status(player_id):
+    params='&P=' + player_id
+    return(api_request('playerStatus',params)['playerStatus'])
